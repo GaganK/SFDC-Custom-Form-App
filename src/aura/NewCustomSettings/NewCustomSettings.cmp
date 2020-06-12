@@ -1,0 +1,291 @@
+<aura:component controller="NewCustomSettingsController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    
+    <aura:attribute name="customFormSettings"
+                    type="Custom_Form_Setting__c" 
+                    default="{'sobjectType':'Custom_Form_Setting__c', 'Active__c':'',
+                             'Allowed_File_Types__c':'',
+                             'Email_Template__c':'','Expire_Link_After__c':'',
+                             'Form_Background_Color__c':'#FFFFFF','Form_body_color__c':'#FFFFFF','Form_Header_Color__c':'#FFFFFF'
+                             ,'PageLayout_name__c':'','Record_Type__c':'',
+                             'Record_Type__c':'','Sobject__c':'',
+                             'Sobject_Label_Name__c':'',Name:''}"/>
+    <aura:attribute name="selectedPageLayout" 
+                    type="string"/>
+    <aura:attribute name="lookupModal"
+                    type="boolean"
+                    default="false"/>
+    
+    <aura:attribute name="recId" 
+                    type="string" 
+                    default=""/>
+    <aura:attribute name="viewMode"
+                    type="boolean" 
+                    default="false"/>
+    <aura:attribute name="showSave" 
+                    type="String"
+                    default="slds-show"/>
+    <aura:attribute name="showEdit" 
+                    type="String" 
+                    default="slds-hide"/>
+    <aura:attribute name="fromPreview"
+                    type="boolean" 
+                    default="false"/>
+    <aura:attribute name="selectedRecType"
+                    type="string"/>
+    <aura:attribute name="guestFormSettingRecord" 
+                    type="Object"/>
+    <aura:attribute name="recordLoadError" 
+                    type="String"/>
+    <aura:attribute name="accept" 
+                    type="List" 
+                    default="['.jpg', '.jpeg']"/>
+    <aura:attribute name="isOpen"
+                    type="boolean" 
+                    default="false"/>
+    <aura:attribute name="guestSettingsId"
+                    type="String"/>
+    <aura:attribute name="guestSettings" 
+                    type="Custom_Form_Setting__c"/>
+    <aura:attribute name="allowEditClass" 
+                    type="String" 
+                    default="slds-show"/>
+    <aura:attribute name="pageLayoutList"
+                    type="List" />
+    <aura:attribute name="spinner" 
+                    type="boolean" 
+                    default="FALSE"/>
+    <aura:attribute name="bodyColor" 
+                    type="string" 
+                    default="#FFFFFF"/>
+    <aura:attribute name="headerColor"
+                    type="string" 
+                    default="#FFFFFF"/>
+    <aura:attribute name="selectedConLookup"
+                    type="string" />
+    <aura:attribute name="selectedAccLookup"
+                    type="string" />
+    <aura:attribute name="selectedLeadLookup"
+                    type="string" />
+    <aura:attribute name="backgroundColor" 
+                    type="string" 
+                    default="#FFFFFF"/>
+    <aura:attribute name="showFileTypes"
+                    type="string" 
+                    default="slds-hide"/>
+    <aura:attribute name="recordTypePageLayout" 
+                    type="NewCustomSettingsController.RecordTypePageLayoutWrapper" />
+    <aura:attribute name="allowReadClass" 
+                    type="String" 
+                    default="false"/>    
+    <aura:attribute name="selectedEmailTemplate"
+                    type="String"/>
+    <aura:attribute name="EmailTemplateValueList" 
+                    type="List"/>
+    <aura:attribute name="sObjectList" 
+                    type="List"/>
+    <aura:attribute name="objectList"
+                    type="List"/>
+    <aura:attribute name="conLookupList"
+                    type="List"/>
+    <aura:attribute name="accountLookupList"
+                    type="List"/>
+    <aura:attribute name="leadLookupList"
+                    type="List"/>
+    <aura:attribute name="recordTypeList" 
+                    type="List"/>
+    <aura:attribute name="objectType" 
+                    type="List"/>
+    <aura:attribute name="objectClass"
+                    type="string" 
+                    default="slds-hide"/>
+    <aura:attribute name="selectedSobj" 
+                    type="string" />
+    <aura:attribute name="defaultSobjLabel"
+                    type="string" 
+                    default="choose-one" />
+    <aura:attribute name="defaultSobjValue" 
+                    type="string" 
+                    default="" />
+    <aura:attribute name="defaultRecTypeLabel" 
+                    type="string" 
+                    default="choose-one" />
+    <aura:attribute name="defaultRecTypeValue" 
+                    type="string"
+                    default="" />
+    <aura:attribute name="defaultSobjTypeLabel"
+                    type="string" 
+                    default="choose-one" />
+    <aura:attribute name="defaultSobjTypeValue" 
+                    type="string" 
+                    default="" />
+    <aura:attribute name="activeSections"
+                    type="List"  />
+    <aura:attribute name="activeSectionsMessage" 
+                    type="String" default="" />
+    <aura:attribute name="preview" 
+                    type="Boolean" 
+                    default="false" />
+    <aura:handler name="init" 
+                  value="{!this}" 
+                  action="{!c.doInit}"/>
+    <!--loading spinner start-->
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+                <p style="transform: translate(-32%, -50%) rotate(-90deg);width: 320px;text-align: center;"> <b>Please wait while loading</b> </p>
+            </div>
+        </div>
+    </aura:if>
+    <!-- Loading spinner end--> 
+    <force:recordData aura:id="recordLoader"
+                      recordId="{!v.guestSettings.Id}"
+                      fields="Sobject_Label_Name__c,PageLayout_name__c,Sobject__c,Email_Template__c,Record_Type__c,Record_Type_Name__c"
+                      targetFields="{!v.guestFormSettingRecord}"
+                      targetError="{!v.recordLoadError}"
+                      />
+    
+    <lightning:layout>
+        <lightning:layoutitem padding="around-small" size="12">
+            <lightning:card footer="" title="Easy Form Settings" iconName="standard:record">
+                <aura:set  attribute="actions">
+                    <lightning:button class="{!v.showEdit}" onclick="{!c.editMode}" variant="brand" label="Edit" />
+                </aura:set>
+                <span>
+                    <div class="slds-m-around_small">
+                        <!-- the messages component is for error messages -->
+                        <lightning:layout multipleRows="true">
+                             <lightning:layoutItem size="12" flexibility="auto" padding="around-small">
+                        <h3 class="slds-section-title--divider">Information</h3>
+                    </lightning:layoutItem>
+                            <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                                <lightning:input disabled="{!v.viewMode}"  name="FormName"  aura:id="csForm" label="Form Name" required="true" value="{!v.customFormSettings.Name}" />
+                            </lightning:layoutItem>
+                            <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                                <lightning:select disabled="{!v.viewMode}"   onchange="{!c.getRecordType}" required="true" value="{!v.customFormSettings.Sobject__c}" aura:id="csForm" label="Select Sobject" name="Sobject" >
+                                    <option value="" text="--Choose One--" /> 
+                                    <aura:iteration items="{!v.objectList}" var="sObj" indexVar="key">
+                                        <option  selected="{!sObj.key==v.customFormSettings.Sobject__c}" value="{!sObj.key}" text="{!sObj.value}" />  
+                                    </aura:iteration>
+                                </lightning:select>
+                            </lightning:layoutItem>
+                            
+                            <lightning:layoutItem size="6" flexibility="auto" padding="around-small">  <br/>
+                                <!--<lightning:inputField required="true"   fieldName="PageLayout_name__c" aura:id="pageLayout"/>-->
+                                <lightning:select   disabled="{!v.viewMode}"  required="true" value="{!v.customFormSettings.PageLayout_name__c}" aura:id="csForm" label="Select a PageLayout" name="pageLayouts" >
+                                    <option value="" text="--Choose One--" /> 
+                                    <aura:iteration items="{!v.pageLayoutList}" var="pl">
+                                        <option  selected="{!pl==v.customFormSettings.PageLayout_name__c}" value="{!pl}" text="{!pl}" />  
+                                    </aura:iteration>
+                                </lightning:select>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem size="6" flexibility="auto" padding="around-small">  <br/>
+                                <br/>  <lightning:buttonIcon class="previewClass" iconName="utility:preview" variant="bare" alternativeText="Preview Form" onclick="{!c.previewForm}"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                                <lightning:select disabled="{!v.viewMode}"  value="{!v.customFormSettings.Record_Type__c}" aura:id="recordType" label="Select RecordType" name="RecordType" >
+                                    <option value="" text="--None--" /> 
+                                    <aura:iteration items="{!v.recordTypeList}" var="recType" indexVar="key">
+                                        <option value="{!recType.key}" selected="{!recType.key==v.customFormSettings.Record_Type__c}" text="{!recType.value}" />  
+                                    </aura:iteration>
+                                </lightning:select>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                                <br/><br/>
+                                <lightning:input disabled="{!v.viewMode}" value="{!v.customFormSettings.Active__c}" checked="{!v.customFormSettings.Active__c}" type="checkbox" label="IsActive" name="IsActive"/>                                
+                            </lightning:layoutItem>
+                            <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                                <lightning:select  disabled="{!v.viewMode}" value="{!v.customFormSettings.Email_Template__c}" aura:id="emailTemplate" label="Select EmailTemplate" name="EmailTemplate" >
+                                    <option value=""  text="--none--" />
+                                    <aura:iteration items="{!v.EmailTemplateValueList}" var="emailType" indexVar="key">
+                                        <option value="{!emailType.key}" selected="{!emailType.key==v.customFormSettings.Email_Template__c}" text="{!emailType.value}" />  
+                                    </aura:iteration>
+                                </lightning:select>
+                            </lightning:layoutItem>
+                        </lightning:layout>
+                        <lightning:accordion
+                                             allowMultipleSectionsOpen="true"
+                                             onsectiontoggle="{! c.handleSectionToggle }"
+                                             activeSectionName="{! v.activeSections }"
+                                             >
+                            <lightning:accordionSection name="A" label="Advanced Settings">
+                                <aura:set attribute="actions">
+                                    
+                                </aura:set>
+                                <aura:set attribute="body">
+                                    <lightning:layout multipleRows="true">
+                                                            <lightning:layoutItem size="12" flexibility="auto" padding="around-small">
+                        <h3 class="slds-section-title--divider">Advanced Settings</h3>
+                    </lightning:layoutItem>
+                                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                                            <lightning:input disabled="{!v.viewMode}" type="number" value="{!v.customFormSettings.Expire_Link_After__c}" name="Expire_Link_After__c" label="Expire Link After" />
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                                            
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem  size="6" flexibility="auto" padding="around-small">
+                                            <br/>  <lightning:input disabled="{!v.viewMode}" type="checkbox" onchange="{!c.getFileTypes}" value="{!v.customFormSettings.Allow_File_Upload__c}" checked="{!v.customFormSettings.Allow_File_Upload__c}" label="Allow File Upload" name="Allow_File_Upload__c"/> <br/><br/><br/><br/>
+                                            <lightning:input class="{!v.allowEditClass}" disabled="{!v.viewMode}" type="checkbox" checked="{!v.customFormSettings.Allow_read_after_submit__c}" value="{!v.customFormSettings.Allow_read_after_submit__c}" label="Allow Read After Submit" name="Allow_read_after_submit__c"/>   <br/>     <br/>   <br/><br/>                                   
+                                            <lightning:input class="{!v.allowEditClass}" disabled="{!v.viewMode}" type="checkbox" checked="{!v.customFormSettings.Allow_edit_after_submit__c}" value="{!v.customFormSettings.Allow_edit_after_submit__c}" label="Allow Edit After Submit" name="Allow_edit_after_submit__c"/> 
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem class="{!v.showFileTypes}"  size="6" flexibility="auto" padding="around-small">
+                                            <lightning:recordEditForm aura:id="recordEditForm"
+                                                                      recordId="{!v.recId}"
+                                                                      objectApiName="Custom_Form_Setting__c">
+                                                <lightning:inputField disabled="{!v.viewMode}" aura:id="fileTypes" fieldName="Allowed_File_Types__c" />
+                                            </lightning:recordEditForm>
+                                        </lightning:layoutItem>
+                                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                                            <lightning:input disabled="{!v.viewMode}" type="color" label="Background Color" name="Backgroundcolor" value="{!v.customFormSettings.Form_Background_Color__c}"/>   <br/>
+                                            <lightning:input disabled="{!v.viewMode}"   type="color" label="Body Color" name="color" value="{!v.customFormSettings.Form_body_color__c}"/><br/>
+                                            <lightning:input disabled="{!v.viewMode}" type="color" label="Header Color" name="color" value="{!v.customFormSettings.Form_Header_Color__c}"/>
+                                        </lightning:layoutItem>
+                                    </lightning:layout>
+                                </aura:set>
+                            </lightning:accordionSection>
+                        </lightning:accordion>
+                        
+                        <div class="slds-m-top_medium">
+                            <div class="slds-clearfix">
+                                <div class="slds-align_absolute-center" >  
+                                    <lightning:button class="{!v.showSave}" variant="brand" type="submit" onclick="{!c.saveRecord}" name="save" label="Save" />
+                                    <lightning:button  variant="neutral" 
+                                                      label="Cancel"
+                                                      title="Cancel"
+                                                      onclick="{! c.navigateBack }"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </span>
+            </lightning:card>
+        </lightning:layoutitem>
+    </lightning:layout>  
+    <aura:if isTrue="{!v.preview}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_large">
+            <div class="slds-modal__container" style="max-height : 650px; ">
+                <header class="slds-modal__header slds-modal__header_empty">
+                    <lightning:buttonIcon iconName="utility:close"
+                                          onclick="{! c.closeModel }"
+                                          alternativeText="close"
+                                          variant="bare-inverse"
+                                          class="slds-modal__close"/>
+                </header>
+
+                <div class="slds-scrollable slds-modal__content slds-p-around_medium"  id="modal-content-id-1">
+                    <c:PreviewForm customFormSettings="{!v.customFormSettings}"/>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button variant="brand"
+                                      label="Close"
+                                      title="OK"
+                                      onclick="{!c.closeModel}"/>
+                </footer>
+            </div>
+            
+        </section>
+    </aura:if>    
+   
+</aura:component>

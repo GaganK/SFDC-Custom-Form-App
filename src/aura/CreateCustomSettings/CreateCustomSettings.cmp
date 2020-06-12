@@ -1,0 +1,319 @@
+<aura:component controller="CreateCustomSettingsController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    <aura:handler name="init"
+                  value="{!this}" 
+                  action="{!c.doInit}" />
+    <aura:attribute name="isOpen"
+                    type="boolean"
+                    default="false"/>
+     <aura:attribute name="pageNoShow"
+                    type="String"
+                    default="slds-show"/>
+
+    <aura:attribute name="contactTableModal"
+                    type="boolean"
+                    default="false"/>
+    <aura:attribute name="leadTableModal"
+                    type="boolean"
+                    default="false"/>
+    <aura:attribute name="accountTableModal"
+                    type="boolean"
+                    default="false"/>
+    <aura:attribute name="disableCheckBox"
+                    type="boolean"
+                    default="false"/>
+    <aura:attribute name="changeEmailClass"
+                    type="String"
+                    default="slds-hide"/>
+    <aura:attribute name="currentRecordId" 
+                    type="String" 
+                    default=""/>
+    <aura:attribute name="siteURL" 
+                    type="String"/>
+    <aura:attribute name="isEmailModalOpen" 
+                    type="boolean" 
+                    default="FALSE"/>
+    <aura:attribute name="emailWrapper"
+                    type="CreateCustomSettingsController.EmailFieldsWrapper[]" />
+    <aura:attribute name="toEmailDisabled" 
+                    type="boolean" 
+                    default="false"/>
+    <aura:attribute name="buttonClass" 
+                    type="String" 
+                    default="slds-show"/>
+    <aura:attribute name="spinner"
+                    type="boolean"
+                    default="FALSE"/>
+    <aura:attribute name="recordId"
+                    type="String"/>
+    <aura:attribute name="emailFields"
+                    type="String[]" 
+                    default="id"/>
+    <aura:attribute name="customForm"
+                    type="Custom_Form_Setting__c[]"/>
+    <aura:attribute name="sObjectName"
+                    type="String" 
+                    default="Custom_Form_Setting__c" /> 
+    <aura:attribute name="iconName" 
+                    type="String"
+                    default="Contact" /> 
+    <lightning:navigation aura:id="navService"/>
+    <aura:attribute name="page" 
+                    type="integer" 
+                    description="using for store page Number"/>
+    <aura:attribute name="pages" 
+                    type="integer"
+                    description="using for store All Pages page Number"/>
+    <aura:attribute name="total"
+                    type="integer"
+                    description="total records count store "/>
+    <aura:attribute name="contactList"
+                    type="list" />  
+    <aura:attribute name="parentRecord" 
+                    type="Object"/>
+    <aura:attribute name="parentRecordError"
+                    type="String"/>
+    <aura:attribute name="isSelectAll"
+                    type="boolean"
+                    default="false"/>
+    <aura:attribute name="toEmail"
+                    type="string" />
+    <aura:attribute name="manualEmailEntry"
+                    type="Boolean" /> 
+    <aura:attribute name="contactSendForm"
+                    type="Boolean" 
+                    default="false"/>
+    
+    <!--loading spinner start-->
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+                <p style="transform: translate(-32%, -50%) rotate(-90deg);width: 320px;text-align: center;"> <b>Please wait while loading</b> </p>
+            </div>
+        </div>
+    </aura:if>
+    <aura:html tag="style">
+        .slds-modal__container{
+        height : auto;
+        width: 110%;
+        max-width: 80rem;
+        }
+        .modal-body{
+        height : 400px !important;
+        max-height: 400px !important;
+        }
+        
+        .customFooter{
+        display: inline !important;
+        }
+    </aura:html> 
+    <div class="slds-modal__content slds-p-around_x-small" style="max-height : 800px; overflow-y:scroll;">
+        <lightning:layout>
+            <lightning:layoutitem padding="around-small" size="12">
+                <lightning:card footer="" title="">
+                    <span>
+                        <div class="slds-m-around_small">
+                            <div class="slds-page-header" role="banner">
+                                <div class="slds-grid">
+                                    <div class="slds-col slds-size_4-of-7">
+                                        <aura:if isTrue="{!v.parentRecord.Email != null}">
+                                            <lightning:input type="email" placeholder="Enter Recepient Email id.." name="email" value="{!v.parentRecord.Email}" label="Please Enter Recepient's Email id" />
+                                            <aura:set attribute="else">
+                                                <lightning:input disabled="{!v.toEmailDisabled}" aura:id="emailForm" label="To: " type="text"
+                                                                 name="toEmail"
+                                                                 placeholder="Enter Recepient Email id.."
+                                                                 value="{!v.toEmail}"
+                                                                 messageWhenPatternMismatch="Please enter a valid email or valid emails separated by a semi-colon"
+                                                                 pattern="^(([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)(\s*;\s*|\s*$))*$" />                                            </aura:set>
+                                        </aura:if>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-7 buttonspadding">
+                                        <lightning:button label="Change Email Id"  variant="brand" class="{!v.changeEmailClass}" onclick="{!c.enableManualEmailEntry }"  />
+                                        
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-7 buttonspadding">
+                                        <lightning:button label="Send Form" class="slds-button_brand" onclick="{!c.handleSelectedSettings }"  />
+                                        
+                                    </div>
+                                </div>
+                                <br/>
+                                <div class="slds-align_absolute-center">     
+                                    <lightning:button class="{!if(v.contactSendForm == true,'slds-hide','slds-show')}" variant="brand" label="New" onclick="{! c.createCustomSettings }" />
+                                 
+                                </div>
+                                <br/>
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col">
+                                        <ui:inputSelect aura:id="recordSize" label="Display Record Per Page: " change="{!c.onSelectChange}">
+                                            <ui:inputSelectOption text="5" label="5" value="true"/>
+                                            <ui:inputSelectOption text="10" label="10"/>
+                                            <ui:inputSelectOption text="15" label="15"/>
+                                        </ui:inputSelect>
+                                    </div>
+                                    <div class="slds-col">
+                                        <ui:inputSelect aura:id="formSettingsFilter" label="view" change="{!c.onSelectChange}">
+                                            <ui:inputSelectOption text="All" label="All" value="All"/>
+                                            <ui:inputSelectOption text="Active" label="Active"/>
+                                            <ui:inputSelectOption text="InActive" label="InActive"/>
+                                        </ui:inputSelect>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
+                                <thead>
+                                    <tr class="slds-text-title_caps">
+                                        <th>           
+                                            <div class="slds-truncate" title="">select</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Form Name">Form Name</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Pagelayout Name">Pagelayout Name</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="No of EasyForms">Total Easy Forms</div>
+                                        </th>
+                                        
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="View EasyForms">View Easy Forms</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="">Action</div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <aura:iteration items="{!v.customForm}" var="cf"> 
+                                        <tr>
+                                            <th>
+                                                <label class="slds-checkbox">
+                                                    <ui:inputCheckbox disabled="{!cf.Active__c == False}" aura:id="checkContact" value="" text="{!cf}"/>
+                                                    <span class="slds-checkbox--faux" />
+                                                    <span class="slds-form-element__label"></span>
+                                                </label>
+                                            </th>
+                                            <th scope="row" data-label="Sobject Name">
+                                                <div class="slds-truncate" title="{!cf.Name}">{!cf.Name}</div>
+                                            </th>
+                                            <th scope="row" data-label="Sobject Name">
+                                                <div class="slds-truncate" title="{!cf.PageLayout_name__c}">{!cf.PageLayout_name__c}</div>
+                                            </th>
+                                            <th scope="row" data-label="Sobject Name">
+                                                <div class="slds-truncate" title="{!cf.Number_of_GuestForms__c}">{!cf.Number_of_GuestForms__c}</div>
+                                            </th>
+                                            <th scope="row" data-label="Sobject Name">
+                                                <lightning:button  type="submit" name="view" label="view" onclick="{!c.openRelatedList}" value="{!cf.Id}" />
+                                            </th>
+                                            <th scope="row" data-label="Sobject Name">
+                                                <lightning:buttonMenu aura:id="menu" alternativeText="Show menu" onselect="{! c.handleSelect }">
+                                                    <lightning:menuItem aura:id="menuItems"  label="View" value="{!cf}"  accesskey='2' iconName="utility:preview"/>
+                                                    <lightning:menuItem aura:id="menuItems"  label="Edit" value="{!cf}" accesskey='1' iconName="utility:edit"/>
+                                                    <lightning:menuItem aura:id="menuItems"  label="Delete" value="{!cf}" accesskey='3' iconName="utility:delete"/>
+                                                </lightning:buttonMenu>                                          
+                                            </th>
+                                        </tr>
+                                    </aura:iteration>	
+                                </tbody>
+                            </table><br/>
+                            
+                            <div class="slds-clearfix">
+                                <div class="slds-align_absolute-center">  
+                                    <div  class="{!v.buttonClass}">
+                                    <lightning:button class="{!if(v.page == 1,'slds-hide','slds-show')}"  variant="brand" label="Previous Page" onclick="{! c.navigate }" />            
+                                    <lightning:button class="{!if(v.page == v.pages,'slds-hide','slds-show')}" aura:id="previousPage" variant="brand" label="Next Page" onclick="{! c.navigate }" />
+                                </div>
+                                    </div>
+                                <div class="{!v.pageNoShow}">
+                                <div class="slds-float_right">
+                                    
+                                    <p class="slds-page-header__title slds-truncate"> Page {!v.page} / {!v.pages}</p>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                    </span>
+                </lightning:card>
+            </lightning:layoutitem>
+        </lightning:layout>      
+    </div>
+    <aura:if isTrue="{!v.isEmailModalOpen}">
+        <!-- Modal/Popup Box starts here-->
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <!-- Modal/Popup Box Header Starts here-->
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon iconName="utility:close"
+                                          onclick="{! c.closeModel }"
+                                          alternativeText="close"
+                                          variant="bare-inverse"
+                                          class="slds-modal__close"/>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Select Recipient Email</h2>
+                </header>
+                <!--Modal/Popup Box Body Starts here-->
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <lightning:card title="">
+                        <lightning:layout>
+                            <lightning:layoutitem padding="around-small" size="12">
+                                <table   class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
+                                    <thead>
+                                        <tr class="slds-text-title_caps">
+                                            <th>           
+                                                <div class="slds-truncate" title="">Select</div>
+                                            </th>
+                                            
+                                            <th>           
+                                                <div class="slds-truncate" title="">Field</div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate" title="Email">Email</div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <aura:iteration items="{!v.emailWrapper}"  var="e"> 
+                                            <tr>
+                                                <th>
+                                                    <label class="slds-checkbox">
+                                                        <ui:inputCheckbox disabled="{!v.disableCheckBox}" aura:id="emailId" value="" text="{!e.emailId}" />
+                                                        <span class="slds-checkbox--faux" />
+                                                        <span class="slds-form-element__label"></span>
+                                                    </label>
+                                                </th>
+                                                <th scope="row" data-label="Sobject Name">
+                                                    <div class="slds-truncate" title="{!e.fieldLabel}">{!e.fieldLabel}</div>
+                                                </th>
+                                                <th scope="row" data-label="Sobject Name">
+                                                    <div class="slds-truncate" title="{!e.emailId}">{!e.emailId}</div>
+                                                </th>
+                                            </tr>
+                                        </aura:iteration>	
+                                    </tbody>
+                                </table><br/>
+                                <div class="slds-align_absolute-center" >
+                                    <ui:inputCheckbox aura:id="manualEmailEntry" label="Do you want to enter emailId manually?" change="{!c.onSelectManualEntry}"/>
+                                </div>
+                            </lightning:layoutitem>
+                        </lightning:layout>
+                    </lightning:card>
+                </div>
+                <!--Modal/Popup Box Footer Starts here-->
+                <footer class="slds-modal__footer">
+                    <lightning:button variant="neutral"
+                                      label="Cancel"
+                                      title="Cancel"
+                                      onclick="{! c.closeModel }"/>
+                    <lightning:button variant="brand"
+                                      label="Select"
+                                      title="OK"
+                                      onclick="{!c.submitDetails}"/>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+   
+</aura:component>

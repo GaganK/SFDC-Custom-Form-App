@@ -1,0 +1,92 @@
+<aura:component controller="DisplaySubmittedGuestFormsController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    <aura:attribute name="spinner"
+                    type="boolean"
+                    default="True"/>
+    <aura:attribute name="activeSections"
+                    type="List"  />
+    <aura:attribute name="activeSectionsMessage" 
+                    type="String" default="" />
+    <aura:attribute name="submitRecords" type="DisplaySubmittedGuestFormsController.SubmittedGuestFormWrapper[]" />
+    <lightning:navigation aura:id="navigation"/>
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+                <p style="transform: translate(-32%, -50%) rotate(-90deg);width: 320px;text-align: center;"> <b>Please wait while loading</b> </p>
+            </div>
+        </div>
+    </aura:if>
+    <aura:html tag="style">
+        .slds-modal__container{
+        height : auto;
+        width: 110%;
+        max-width: 80rem;
+        }
+        .modal-body{
+        height : 400px !important;
+        max-height: 400px !important;
+        }
+        
+        .customFooter{
+        display: inline !important;
+        }
+    </aura:html> 
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <div class="slds-modal__content slds-p-around_x-small" style="max-height : 800px;">
+        <aura:if isTrue="{!v.submitRecords != null}">
+            <lightning:card iconName="standard:related_list"  title="Submitted Forms">
+                <lightning:layout multiplerows="true">
+                    <lightning:layoutitem padding="around-small" size="12">
+                        <lightning:accordion
+                                             allowMultipleSectionsOpen="true"
+                                             onsectiontoggle="{! c.handleSectionToggle }"
+                                             activeSectionName="{! v.activeSections }"
+                                             >
+                            <aura:iteration items="{!v.submitRecords}" var="rec" >
+                                <div class="slds-box">
+                                    <lightning:accordionSection name="{!rec.objAPI}" label="{!rec.objLabel}">
+                                        <aura:set attribute="actions">
+                                            {!rec.noOfRecords}
+                                        </aura:set>
+                                        <aura:set attribute="body">
+                                            <lightning:card >
+                                                <aura:iteration items="{!rec.guestFormList}" var="mapValue">
+                                                    <div class="slds-box">
+                                                        <div class="slds-page-header" role="banner">
+                                                        </div><br/>
+                                                        
+                                                        <lightning:card  iconName="action:new_note" >
+                                                            <aura:set attribute="actions">
+                                                                <lightning:button label="View" value="{!mapValue.Parent__c}" onclick="{!c.navigate}"/>
+                                                            </aura:set>
+                                                            <lightning:recordForm
+                                                                                  recordId="{!mapValue.Parent__c}"
+                                                                                  objectApiName="{!mapValue.Object_API_Name__c}"
+                                                                                  density ="Compact"                     
+                                                                                  layoutType="Compact"
+                                                                                  columns="2"
+                                                                                  mode="readonly" />
+                                                        </lightning:card>
+                                                        
+                                                    </div>
+                                                    
+                                                </aura:iteration>
+                                            </lightning:card>
+                                        </aura:set>
+                                    </lightning:accordionSection>
+                                </div>
+                            </aura:iteration>  
+                        </lightning:accordion>
+                        
+                    </lightning:layoutitem>
+                </lightning:layout>
+            </lightning:card>
+            <aura:set attribute="else">
+               Form is still not yet submitted
+
+            </aura:set>
+        </aura:if> 
+    </div>
+</aura:component>

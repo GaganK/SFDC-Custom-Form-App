@@ -1,0 +1,23 @@
+<aura:component implements="force:appHostable,force:hasRecordId,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    <aura:attribute name="guestFormRecord" type="Object"/>
+    <aura:attribute name="recordLoadError" type="String"/>
+    <aura:attribute name="parentSobject" type="String" default="{!v.guestFormRecord.Object_Label__c}"/>
+    <force:recordData aura:id="recordLoader"
+                      recordId="{!v.recordId}"
+                      fields="Parent__c,Object_Name__c,Object_API_Name__c"
+                      targetFields="{!v.guestFormRecord}"
+                      targetError="{!v.recordLoadError}"
+                      />
+    <aura:if isTrue="{!v.guestFormRecord.Parent__c != null}">
+        <lightning:card>
+            <div class="slds-p-left_medium">
+              {!v.guestFormRecord.Object_Name__c} : <lightning:button variant="base" label="View" title="Base action" onclick="{! c.navigateDetail }"/>
+            </div>
+        </lightning:card>
+        <aura:set attribute="else">
+            <div style="background-color:LightBlue">
+                Guest Form is still not yet submitted
+            </div>
+        </aura:set>
+    </aura:if>
+</aura:component>

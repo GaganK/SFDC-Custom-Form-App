@@ -1,0 +1,23 @@
+<apex:page showHeader="false" controller="CustomFormsUtility" action="{!checkExpiration}">
+    
+    <apex:includeScript value="{!$Site.BaseUrl}/lightning/lightning.out.js?v=2"/>
+    <div id="lightning" />
+    
+    <script>
+    var customsettingId = '{!$CurrentPage.parameters.customsettingId}';
+    var guestFormId = '{!$CurrentPage.parameters.guestformid}';
+        $Lightning.use("c:GuestFormApp", function() {
+        var attributes = {
+            customsettingId : customsettingId,
+            guestFormId :    guestFormId
+        };
+        
+        $Lightning.createComponent("c:FormBuilder",attributes ,
+                                   "lightning",
+                                   function(cmp) {
+                                       // do some stuff
+                                   });
+    }
+                  );
+    </script>
+</apex:page>

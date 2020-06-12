@@ -1,0 +1,29 @@
+public class Constants {
+    public  final String ALL='All';
+    public  final String ACTIVE='Active';
+    public  final String INACTIVE='InActive';
+    public  final String CONTACT='Contact';
+    public  final String LEAD='Lead';
+    public  final String ACCOUNT='Account';
+    public  final String SENT='Sent';
+    public  final String TEXT='Text'; 
+    public  final String NAME='Name';
+    public  final String SUBMITTED='Submitted';
+    public  final String OPENED='Opened';
+    public  final String CUSTOMLINKS='Custom Links';
+    public  final String UTF='UTF-8';
+    public  final String LASTNAME='LastName';
+    public  final String MASTER ='Master';
+    public  final String size='size';
+    public  final String totalSize='totalSize';
+    public  final String done='done';
+    public  final String queryLocator='queryLocator';
+    public  final String entityTypeName='entityTypeName';
+    public  final String records='records';
+    public  final String type='type';
+    public  final String url='url';
+    public  final String attributes='attributes';
+    public  final String Id='Id';
+    public  final String DeveloperName='DeveloperName';
+    public  final String NamespacePrefix='NamespacePrefix';
+}

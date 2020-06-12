@@ -1,0 +1,11 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    <aura:attribute name="customSetting" type="Custom_Form_Setting__c"/>
+    
+    <lightning:card footer="" title="GuestForm Settings" iconName="standard:account">
+        <aura:set attribute="actions">
+            <lightning:button label="Edit" onclick="{!c.doEdit}"/>
+            <lightning:button label="Back"  onclick="{!c.goBack}"/>
+        </aura:set><br/>
+        <force:recordView recordId="{!v.customSetting.Id}" />
+    </lightning:card>
+</aura:component>
